@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gear ratios</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 12px;
+            margin-left: 40px;
+        }
+        h1 {
+            margin: 40px 0 0 0;
+            font-size: 20px;
+        }
+        table {
+            margin: 40px 0 0 0;
+        }
+        input {
+            width: 300px;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        .container {
+            margin: auto;
+            width: 800px;
+        }
+        #ratios {
+            border-collapse: collapse;
+            font-family: monospace;
+        }
+        #ratios tr:nth-child(even) {
+            /*background-color: #f2f2f2;*/
+        }
+        #ratios td {
+            width: 60px;
+            text-align: center;
+        }
+        .horizontal-label {
+            text-align: center;
+        }
+        .vertical-label div {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            vertical-align: middle;
+            position: absolute;
+        }
+        #ratios td:first-child {
+            width: 30px;
+        }
+        #ratios tr:first-child {
+            height: 30px;
+        }
+        .label {
+            /*background-color: #f2f2f2;*/
+        }
+        td.cog {
+            border-right: 1px solid black;
+        }
+        td.ring {
+            border-bottom: 1px solid black;
+        }
+        .footer {
+            border-top: 1px solid #aeaeae;
+            margin-top: 50px;
+            color: #4a4a4a;
+        }
+        .footer p {
+            margin: 6px 0 0 0;
+            font-size: 10px;
+            text-align: right;
+        }
+        a, a:hover, a:active, a:visited {
+            color: blue;
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gear ratios</h1>
+
+    <p>Calculate gear ratios of your bike by adjusting rings and cogs below.</p>
+
+    <table>
+        <tr>
+            <td><label for="chainrings">Chainrings:</label></td>
+            <td><input id="chainrings" type="text" value="34 52"></td>
+        </tr>
+        <tr>
+            <td><label for="cogs">Cogs:</label></td><td><input id="cogs" type="text" value="11 12 13 14 16 18 20 22 25 28 32"></td>
+        </tr>
+    </table>
+
+    <div class="row">
+        <div style="flex: 1 0 0"><table id="ratios" style="flex: 1 0 0"></table></div>
+        <div style="flex: 1 1 0"><img src="Derailleur_Bicycle_Drivetrain.svg" alt="derailleur" style="width: 100%"></div>
+        <!-- image taken from https://en.wikipedia.org/wiki/Derailleur_gears#/media/File:Derailleur_Bicycle_Drivetrain.svg -->
+        <!-- author: https://commons.wikimedia.org/wiki/User:Keithonearth -->
+        <!-- license: https://creativecommons.org/licenses/by-sa/3.0/ -->
+    </div>
+
+    <div class="footer">
+        <p>Created by <a target="_blank" href="//luciopaiva.com">Lucio Paiva</a> on July 2018</p>
+        <p>Image author: <a target="_blank" href="//commons.wikimedia.org/wiki/User:Keithonearth">Keithonearth</a>
+            licensed under <a target="_blank" href="//creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></p>
+    </div>
+</div>
+
+<script>
+    const ringsInput = document.getElementById("chainrings");
+    const cogsInput = document.getElementById("cogs");
+    const table = document.getElementById("ratios");
+
+    function insertTextCell(tr, text) {
+        const cell = tr.insertCell();
+        const textNode = document.createTextNode(text);
+        cell.appendChild(textNode);
+        return cell;
+    }
+
+    function recalculate() {
+        const rings = ringsInput.value.split(/\s+/).map(str => parseInt(str, 10)).filter(val => !isNaN(val));
+        const cogs = cogsInput.value.split(/\s+/).map(str => parseInt(str, 10)).filter(val => !isNaN(val));
+
+        table.querySelectorAll("tr").forEach(tr => tr.remove());
+
+        const labelTr = table.insertRow();
+        insertTextCell(labelTr, "");
+        insertTextCell(labelTr, "");
+        const ringsCell = insertTextCell(labelTr, "Rings");
+        ringsCell.setAttribute("colspan", (rings.length + 1).toString());
+        ringsCell.classList.add("label");
+
+        const tr = table.insertRow();
+        insertTextCell(tr, "");
+        insertTextCell(tr, "");
+        for (const ring of rings) {
+            insertTextCell(tr, ring).classList.add("ring");
+        }
+
+        let minRatio = Number.POSITIVE_INFINITY;
+        let maxRatio = Number.NEGATIVE_INFINITY;
+        let isFirstCog = true;
+        for (const cog of cogs) {
+            const tr = table.insertRow();
+
+            if (isFirstCog) {
+                const cell = tr.insertCell();
+                const div = document.createElement("div");
+                div.innerText = "Cogs";
+                cell.appendChild(div);
+                cell.setAttribute("rowspan", cogs.length.toString());
+                cell.classList.add("border-right");
+                cell.classList.add("vertical-label");
+                cell.classList.add("label");
+                isFirstCog = false;
+            }
+
+            insertTextCell(tr, cog).classList.add("cog");
+
+            for (const ring of rings) {
+                const ratio = ring / cog;
+                if (ratio < minRatio) minRatio = ratio;
+                if (ratio > maxRatio) maxRatio = ratio;
+                insertTextCell(tr, ratio.toFixed(1));
+            }
+        }
+    }
+
+    ringsInput.addEventListener("input", recalculate);
+    cogsInput.addEventListener("input", recalculate);
+    recalculate();
+</script>
+
+</body>
+</html>
