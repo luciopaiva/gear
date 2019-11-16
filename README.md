@@ -1,4 +1,4 @@
 
 # Gear ratio calculator
 
-See online version [here](//luciopaiva.com/gear).
+See it online [here](//luciopaiva.com/gear).
